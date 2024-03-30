@@ -27,5 +27,27 @@ namespace Presentacion.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("verificar/{ano}/{mes}/{dia}")]
+        public async Task<ActionResult<IEnumerable<Tipo>>> Verificar([FromRoute] int ano, [FromRoute] int mes, [FromRoute] int dia)
+        {
+            try
+            {
+                var esFestivo = await _servicio.Verificar(ano, mes, dia);
+
+                if (esFestivo)
+                {
+                    return Ok($"El dia {dia}/{mes}/{ano} es FESTIVOOOOO!!!!!");
+                }
+                else
+                {
+                    return Ok($"El dia {dia}/{mes}/{ano} no es festivo, a trabajar.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

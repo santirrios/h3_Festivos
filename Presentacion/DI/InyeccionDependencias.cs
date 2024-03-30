@@ -29,5 +29,11 @@ namespace Presentacion.DI
 
             return servicios;
         }
+
+
+        public static string CusToString(this int numero)
+        {
+            return Convert.ToString(numero);
+        }
     }
 }
