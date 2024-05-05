@@ -43,6 +43,8 @@ namespace Aplicacion
             bool esFestivo = false;
             var festivos = await ObtenerTodos();
 
+            ValidarFecha(ano, mes, dia);
+
             //Tipo uno
             var festivosInmutables = festivos.Where(e => e.IdTipo == TipoFestivo.Fijo.GetHashCode()).ToList();
 
@@ -176,6 +178,29 @@ namespace Aplicacion
             domingoPascua = domingoPascua.AddDays(dias);
 
             return domingoPascua;
+        }
+
+        private void ValidarFecha(int ano, int mes, int dia)
+        {
+            DateTime fecha;
+            try
+            {
+                fecha = new DateTime(ano, mes, dia);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Fecha invalida.");
+            }
+
+            if(fecha < new DateTime(1900, 1, 1))
+            {
+                throw new Exception("La fecha minima es 1900/01/01");
+            }
+
+            if(fecha > new DateTime(3000,1,1))
+            {
+                throw new Exception("No se puede ingresar fecha mayor a 3000/01/01");
+            }
         }
     }
 
