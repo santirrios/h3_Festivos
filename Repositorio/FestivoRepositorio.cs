@@ -59,7 +59,7 @@ namespace Repositorio
 
         public async Task<IEnumerable<Festivo>> ObtenerTodos()
         {
-            return await context.Festivos.ToArrayAsync();
+            return await context.Festivos.Include(e => e.Tipo).ToArrayAsync();
         }
     }
 }

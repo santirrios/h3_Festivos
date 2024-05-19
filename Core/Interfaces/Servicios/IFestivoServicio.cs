@@ -15,5 +15,7 @@ namespace Core.Interfaces.Servicios
         Task<IEnumerable<Festivo>> ObtenerTodos();
 
         Task<bool> Verificar(int ano, int mes, int dia);
+
+        Task<IEnumerable<Festivo>> ObtenerFestivosNano(int nano);
     }
 }

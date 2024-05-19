@@ -38,6 +38,76 @@ namespace Aplicacion
             return await _repositorio.ObtenerTodos();
         }
 
+        public async Task<IEnumerable<Festivo>> ObtenerFestivosNano(int nano)
+        {
+            IEnumerable<Festivo> retorno = new List<Festivo>();
+
+            ValidarNano(nano);
+
+            var festivos = await ObtenerTodos();
+
+            //Tipo uno
+            retorno = festivos.Where(e => e.IdTipo == TipoFestivo.Fijo.GetHashCode()).ToList();
+
+
+            //Tipo dos
+
+            var festivosLunes = festivos.Where(e => e.IdTipo == TipoFestivo.LeyPuenteFestivo.GetHashCode()).ToList();
+
+            foreach (var festivoLunes in festivosLunes)
+            {
+                DateTime fechaFestivoLunes = new DateTime(nano, festivoLunes.Mes, festivoLunes.Dia);
+
+                fechaFestivoLunes = TransformarFestivoLunes(fechaFestivoLunes);
+
+                festivoLunes.Dia = fechaFestivoLunes.Day;
+                festivoLunes.Mes = fechaFestivoLunes.Month;
+
+                retorno = retorno.Append(festivoLunes);
+            }
+
+            //Tipo tres
+            var festivosPascua = festivos.Where(e => e.IdTipo == TipoFestivo.BasadoPascua.GetHashCode()).ToList();
+            foreach (var festivoPascua in festivosPascua)
+            {
+                var domigoPascua = CalcularDomingoPascua(nano);
+
+                domigoPascua = domigoPascua.AddDays(festivoPascua.DiasPascua);
+
+                festivoPascua.Dia = domigoPascua.Day;
+                festivoPascua.Mes = domigoPascua.Month;
+
+                retorno = retorno.Append(festivoPascua);
+            }
+
+            //Tipo cuatro
+            var festivosPascuaPasaLunes = festivos.Where(e => e.IdTipo == TipoFestivo.BasadoPascualYLeyPuenteFes.GetHashCode()).ToList();
+            foreach (var festivoPascuaLunes in festivosPascuaPasaLunes)
+            {
+                var domigoPascua = CalcularDomingoPascua(nano);
+
+                domigoPascua = domigoPascua.AddDays(festivoPascuaLunes.DiasPascua);
+
+                domigoPascua = TransformarFestivoLunes(domigoPascua);
+
+                festivoPascuaLunes.Dia = domigoPascua.Day;
+                festivoPascuaLunes.Mes = domigoPascua.Month;
+
+                retorno = retorno.Append(festivoPascuaLunes);
+            }
+
+            return retorno;
+        }
+
+        private void ValidarNano(int nano)
+        {
+            if (nano < 1900)
+                throw new Exception("El año minimo es 1900");
+
+            if (nano > 3000)
+                throw new Exception("El año maximo es 3000");
+        }
+
         public async Task<bool> Verificar(int ano, int mes, int dia)
         {
             bool esFestivo = false;
@@ -58,31 +128,7 @@ namespace Aplicacion
             {
                 DateTime fechaFestivoLunes = new DateTime(ano, festivoLunes.Mes, festivoLunes.Dia);
 
-
-                switch (fechaFestivoLunes.DayOfWeek.GetHashCode())
-                {
-                    case 0:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(1);
-                        break;
-                    case 2:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(6);
-                        break;
-                    case 3:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(5);
-                        break;
-                    case 4:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(4);
-                        break;
-                    case 5:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(3);
-                        break;
-                    case 6:
-                        fechaFestivoLunes = fechaFestivoLunes.AddDays(2);
-                        break;
-                }
-
-                if (fechaFestivoLunes.DayOfWeek != DayOfWeek.Monday)
-                    throw new Exception("MALLLLL");
+                fechaFestivoLunes = TransformarFestivoLunes(fechaFestivoLunes);
 
                 if (fechaFestivoLunes.Day == dia && fechaFestivoLunes.Month == mes)
                     esFestivo = true;
@@ -110,58 +156,40 @@ namespace Aplicacion
 
                 domigoPascua = domigoPascua.AddDays(festivoPascuaLunes.DiasPascua);
 
-                switch (domigoPascua.DayOfWeek.GetHashCode())
-                {
-                    case 0:
-                        domigoPascua = domigoPascua.AddDays(1);
-                        break;
-                    case 2:
-                        domigoPascua = domigoPascua.AddDays(6);
-                        break;
-                    case 3:
-                        domigoPascua = domigoPascua.AddDays(5);
-                        break;
-                    case 4:
-                        domigoPascua = domigoPascua.AddDays(4);
-                        break;
-                    case 5:
-                        domigoPascua = domigoPascua.AddDays(3);
-                        break;
-                    case 6:
-                        domigoPascua = domigoPascua.AddDays(2);
-                        break;
-                }
-
-                if (domigoPascua.DayOfWeek != DayOfWeek.Monday)
-                    throw new Exception("MALLLLL");
+                domigoPascua = TransformarFestivoLunes(domigoPascua);
 
                 if (domigoPascua.Day == dia && domigoPascua.Month == mes)
                     esFestivo = true;
             }
 
-            //Domingo ramos
-            var domingoRamos = CalcularDomingoRamos(ano);
-            if (mes == domingoRamos.Month && dia == domingoRamos.Day)
-                esFestivo = true;
-
             return esFestivo;
         }
 
-
-        private DateTime CalcularDomingoRamos(int ano)
+        private DateTime TransformarFestivoLunes(DateTime fechaFestivoLunes)
         {
-            var a = ano % 19;
-            var b = ano % 4;
-            var c = ano % 7;
-            var d = ((19 * a) + 24) % 30;
+            switch (fechaFestivoLunes.DayOfWeek.GetHashCode())
+            {
+                case 0:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(1);
+                    break;
+                case 2:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(6);
+                    break;
+                case 3:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(5);
+                    break;
+                case 4:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(4);
+                    break;
+                case 5:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(3);
+                    break;
+                case 6:
+                    fechaFestivoLunes = fechaFestivoLunes.AddDays(2);
+                    break;
+            }
 
-            var dias = d + ((2 * b) + (4 * c) + (6 * d) + 5) % 7;
-
-            //mes marzo
-            var domingoRamos = new DateTime(ano, 3, 15);
-            domingoRamos = domingoRamos.AddDays(dias);
-
-            return domingoRamos;
+            return fechaFestivoLunes;
         }
 
         private DateTime CalcularDomingoPascua(int ano)

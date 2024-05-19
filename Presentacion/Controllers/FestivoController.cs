@@ -49,5 +49,20 @@ namespace Presentacion.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("ObtenerFestivosNano/{ano}")]
+        public async Task<ActionResult<IEnumerable<Tipo>>> ObtenerFestivosNano([FromRoute] int ano)
+        {
+            try
+            {
+                var festivosNano = await _servicio.ObtenerFestivosNano(ano);
+
+                return Ok(festivosNano);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
