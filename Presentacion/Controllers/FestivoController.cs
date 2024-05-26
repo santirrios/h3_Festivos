@@ -15,19 +15,6 @@ namespace Presentacion.Controllers
             this._servicio = servicio;
         }
 
-        [HttpGet("listar")]
-        public async Task<ActionResult<IEnumerable<Tipo>>> ObtenerTodos()
-        {
-            try
-            {
-                return Ok(await _servicio.ObtenerTodos());
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpGet("verificar/{ano}/{mes}/{dia}")]
         public async Task<ActionResult<IEnumerable<Tipo>>> Verificar([FromRoute] int ano, [FromRoute] int mes, [FromRoute] int dia)
         {
@@ -35,14 +22,7 @@ namespace Presentacion.Controllers
             {
                 var esFestivo = await _servicio.Verificar(ano, mes, dia);
 
-                if (esFestivo)
-                {
-                    return Ok($"El dia {dia}/{mes}/{ano} es FESTIVOOOOO!!!!!");
-                }
-                else
-                {
-                    return Ok($"El dia {dia}/{mes}/{ano} no es festivo, a trabajar.");
-                }
+                return Ok(esFestivo);
             }
             catch (Exception ex)
             {
@@ -50,12 +30,12 @@ namespace Presentacion.Controllers
             }
         }
 
-        [HttpGet("ObtenerFestivosNano/{ano}")]
-        public async Task<ActionResult<IEnumerable<Tipo>>> ObtenerFestivosNano([FromRoute] int ano)
+        [HttpGet("ObtenerFestivosNano/{nano}")]
+        public async Task<ActionResult<IEnumerable<Tipo>>> ObtenerFestivosNano([FromRoute] int nano)
         {
             try
             {
-                var festivosNano = await _servicio.ObtenerFestivosNano(ano);
+                var festivosNano = await _servicio.ObtenerFestivosNano(nano);
 
                 return Ok(festivosNano);
             }

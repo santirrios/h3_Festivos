@@ -96,7 +96,7 @@ namespace Aplicacion
                 retorno = retorno.Append(festivoPascuaLunes);
             }
 
-            return retorno;
+            return retorno.OrderBy(e => e.Id);
         }
 
         private void ValidarNano(int nano)
